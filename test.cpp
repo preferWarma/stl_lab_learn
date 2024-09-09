@@ -1,6 +1,6 @@
-#include "lib/lyf.h"
-#include "lib/stopwatch.h"
-#include "lib/memCheck.h"   // 用于内存泄漏检测, 必须放在所有头文件的最后
+#include "lyf.h"
+#include "stopwatch.h"
+#include "memCheck.h"   // 用于内存泄漏检测, 必须放在所有头文件的最后
 
 using namespace lyf;
 using namespace lyf::StringTool;

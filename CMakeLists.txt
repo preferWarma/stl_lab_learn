@@ -8,8 +8,12 @@ set(CMAKE_CXX_STANDARD 20) # 设置C++标准版本
 
 add_subdirectory(src) # 添加src文件夹作为子目录
 
-set(exeFileName ${PROJECT_NAME}) # 设置可执行文件名称
+set(exeFileName main) # 设置可执行文件名称
 
 add_executable(${exeFileName} main.cpp) # 添加可执行文件
 
 target_link_libraries(${exeFileName} PUBLIC MyLib) # 添加链接库, MyLib为src文件夹下CMakeLists.txt中定义的MyLib
+
+# 以下是添加测试文件的使用(方便单文件测试运行)
+add_executable(test test.cpp)
+target_link_libraries(test PUBLIC MyLib)
