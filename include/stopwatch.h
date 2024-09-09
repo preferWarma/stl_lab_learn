@@ -101,7 +101,7 @@ namespace lyf {
     public:
         inline auto_stopwatch(double rate = 1.0) : stopwatch(rate) { this->start(); }
         inline auto_stopwatch(TimeType type) : stopwatch(type) { this->start(); }
-        inline ~auto_stopwatch() { std::cout << "duration time: " << this->duration() << static_cast<TimeType>(rate) << endl; }
+        inline ~auto_stopwatch() { std::cout << "duration time: " << this->duration() << static_cast<TimeType>(rate) << std::endl; }
     };   // class auto_stopWatch
 
 }   // namespace lyf
