@@ -109,7 +109,8 @@
     "code-runner.saveAllFilesBeforeRun": true, // 控制是否在运行前保存所有文件。
     "code-runner.saveFileBeforeRun": true, // 控制是否在运行前保存文件。
     "languageTool.language": "en", // 控制语言工具的语言。
-    "C_Cpp.formatting": "vcFormat", // 控制C/C++代码格式化的格式。
+    // "C_Cpp.formatting": "vcFormat", // 控制C/C++代码格式化的格式。
     "C_Cpp.default.cppStandard": "c++20",
     "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools", // 控制C/C++代码的默认C++标准。
+    "clang-format.executable": "../clang-format"
 }

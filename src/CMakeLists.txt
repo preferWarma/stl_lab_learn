@@ -1,4 +1,4 @@
-set(src memCheck.cpp)
+set(src memCheck.cpp lyf_shared_ptr.cpp)
 
 add_library(MyLib OBJECT ${src}) # 设置库名以及库对应的cpp文件
 
