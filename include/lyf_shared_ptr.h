@@ -20,8 +20,8 @@ class shared_weak_count {
     using atomic_t = std::atomic<std::size_t>;
 
 protected:
-    atomic_t shared_count_{1}; // 当数值减小到0后，释放资源
-    atomic_t weak_count_{1};   // weak_count = weak_ref + (shared_count_ != 0)
+    atomic_t shared_count_{1}; // 当shared_ptr减小到0后，控制块就会调用被管理对象的析构函数
+    atomic_t weak_count_{1};   // weak_count = weak_ref + (shared_count_ != 0), 当weak_count减到0时释放控制块
 
     // 友元声明
     template<class>
@@ -58,20 +58,22 @@ public:
         LYF_ASSERT(previous != 0);
     }
 
+    // shared_count为0时调用被管理对象的析构函数
     void
     shared_count_release() noexcept {
         if ((--shared_count_) == 0UL) {
-            deleter_control_block();
+            delete_pointer();
             weak_count_release();
         }
     }
 
+    // weak_count为0时释放整个控制块
     void
     weak_count_release() noexcept {
-        if (weak_count_.load(std::memory_order_relaxed) == 1) {
-            deleter_control_block();
+        if (weak_count_.load(std::memory_order_seq_cst) == 1) {
+            delete_control_block();
         } else if ((--weak_count_) == 0UL) {
-            deleter_control_block();
+            delete_control_block();
         }
     }
 
@@ -96,11 +98,11 @@ public:
     }
 
     virtual void
-    deleter_pointer() noexcept
+    delete_pointer() noexcept
         = 0;
 
     virtual void
-    deleter_control_block() noexcept
+    delete_control_block() noexcept
         = 0;
 
     virtual void*
@@ -115,8 +117,48 @@ class control_block_with_pointer final : public shared_weak_count {
 
 public:
     using pointer        = element_type*;
-    using delete_type    = Deleter;
+    using deleter_type   = Deleter;
     using allocator_type = Allocator;
+
+private:
+    using alloc_traits               = std::allocator_traits<allocator_type>;
+    using control_block_allocator    = typename alloc_traits::template rebind_alloc<control_block_with_pointer>;
+    using control_block_alloc_traits = typename alloc_traits::template rebind_traits<control_block_with_pointer>;
+
+    pointer& ptr_;
+    deleter_type& deleter_;
+    control_block_allocator& allocator_;
+
+public:
+    control_block_with_pointer(pointer ptr, deleter_type&& deleter, control_block_allocator&& allocator)
+        : ptr_(ptr), deleter_(std::move(deleter)), allocator_(std::move(allocator)) {}
+
+#ifdef LYF_HAS_RTTI
+    NODISCARD virtual void*
+    get_deleter(const std::type_info& type) noexcept override {
+        return (type == typeid(deleter_type)) ? static_cast<void*>(&deleter_) : nullptr;
+    }
+#endif
+
+    virtual void
+    delete_pointer() noexcept override {
+        deleter_(ptr_);
+        deleter_.~deleter_type();
+    }
+
+    virtual void
+    delete_control_block() noexcept override {
+        auto allocator = std::move(allocator_);
+        allocator_.~control_block_allocator();
+
+        control_block_alloc_traits::deallocate(allocator, this, 1);
+    }
+
+    virtual void*
+    managed_pointer() const noexcept override {
+        return ptr_;
+    }
+
 }; // class control_block_with_pointer
 
 NAMESPACE_LYF_END /* namespace lyf */

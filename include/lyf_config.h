@@ -1,11 +1,24 @@
 #ifndef LYF_CONFIG_H_
 #define LYF_CONFIG_H_
 
-#define DEBUG
-
 // C++标准至少11
 #if !defined(__cplusplus) || (__cplusplus < 201103L)
 #error "Please use C++ with standard of at least 11"
+#endif
+
+// 异常
+#ifdef __cpp_exceptions
+#define LYF_HAS_EXCEPTIONS
+#endif
+
+// 运行时类型信息(RTTI)
+#ifdef __cpp_rtti
+#define LYF_HAS_RTTI
+#endif
+
+// DEBUG 模式
+#ifndef NDEBUG
+#define LYF_DEBUGGING
 #endif
 
 // 减少缩进
@@ -33,7 +46,7 @@
 #endif
 
 // assert
-#ifdef DEBUG
+#ifdef LYF_DEBUGGING
 #define ASSERT(cond) assert(cond)
 #endif // DEBUG
 
